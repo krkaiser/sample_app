@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe "Users" do
-  
+
   describe "signup" do
 
    describe "failure" do
@@ -20,7 +20,7 @@ describe "Users" do
       end
     end
 
-   describe "success" do
+    describe "success" do
 
       it "should make a new user" do
         lambda do
@@ -34,6 +34,28 @@ describe "Users" do
                                         :content => "Welcome")
           response.should render_template('users/show')
         end.should change(User, :count).by(1)
+      end
+    end
+  end
+
+  describe "signin/signout" do
+
+    describe "failure" do
+
+      it "should not sign a user in" do
+        user = User.new(:email => "", :password => "")
+        integration_sign_in(user)
+        response.should have_selector("div.flash.error", :content => "Invalid")
+      end
+    end
+
+    describe "success" do
+
+      it "should sign a user in and out" do
+        integration_sign_in(Factory(:user))
+        controller.should be_signed_in
+        click_link "Sign out"
+        controller.should_not be_signed_in
       end
     end
   end
