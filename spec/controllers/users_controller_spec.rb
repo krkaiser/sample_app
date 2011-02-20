@@ -127,6 +127,16 @@ describe UsersController do
                                     [type='password']")
     end
 
+    describe "for signed-in user" do
+
+      it "should deny access to" do
+        @user = Factory(:user)
+        test_sign_in(@user)
+        get :new
+        response.should redirect_to(root_path)
+      end
+    end
+
   end
 
   describe "POST 'create'" do
@@ -152,6 +162,17 @@ describe UsersController do
       it "should render the 'new' page" do
         post :create, :user => @attr
         response.should render_template('new')
+      end
+    end
+
+    describe "for signed-in user" do
+
+      it "should deny access to" do
+        @user = Factory(:user)
+        test_sign_in(@user)
+        @new_user = Factory(:user, :email => "new_user@example.com")
+        post :create, :user => @new_user
+        response.should redirect_to(root_path)
       end
     end
   end
@@ -308,12 +329,24 @@ describe UsersController do
         delete :destroy, :id => @user
         response.should redirect_to(root_path)
       end
+
+      it "destroy links should not appear" do
+        test_sign_in(@user)
+        get :index
+        response.should_not have_selector("a", :content => "delete")
+      end
     end
 
     describe "as an admin user" do
       before(:each) do
         @admin = Factory(:user, :email => "admin@example.com", :admin => true)
         test_sign_in(@admin)
+      end
+
+      it "destroy links should appear" do
+        test_sign_in(@admin)
+        get :index
+        response.should have_selector("a", :content => "delete")
       end
 
       it "should destroy the user" do
@@ -325,6 +358,12 @@ describe UsersController do
       it "should redirect to the users page" do
         delete :destroy, :id => @user
         response.should redirect_to(users_path)
+      end
+
+      it "should not be allowed to destroy the admin itself" do
+        lambda do
+          delete :destroy, :id => @admin
+        end.should_not change(User, :count).by(-1)
       end
     end
   end
