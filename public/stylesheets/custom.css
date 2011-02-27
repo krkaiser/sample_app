@@ -135,6 +135,11 @@ td.sidebar {
   margin-bottom: -15px;
 }
 
+.profile .user_info img.gravatar {
+  border: none;
+  margin-bottom: 0px;
+}
+
 div.field, div.actions {
   margin-bottom: 10px;
 }

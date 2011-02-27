@@ -48,4 +48,17 @@ describe Relationship do
       @relationship.should_not be_valid
     end
   end
+
+  describe "deletion dependancy" do
+
+    it "should delete users relationships if the user is deleted" do
+      @followed.destroy
+      @follower.relationships.find_by_follower_id(@follower.id).should be_nil
+    end
+
+    it "should delete users reverse relationships if the user is deleted" do
+      @follower.destroy
+      @followed.relationships.find_by_followed_id(@followed.id).should be_nil
+    end
+  end
 end

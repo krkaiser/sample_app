@@ -67,6 +67,7 @@ describe UsersController do
 
     before(:each) do
       @user = Factory(:user)
+      @other_user = Factory(:user, :email => Factory.next(:email))
     end
 
     it "should be successful" do
@@ -100,6 +101,31 @@ describe UsersController do
       get :show, :id => @user
       response.should have_selector("span.content", :content => mp1.content)
       response.should have_selector("span.content", :content => mp2.content)
+    end
+
+    describe "user stats sidebar" do
+
+      before(:each) do
+        @user.follow!(@other_user)
+        @other_user.follow!(@user)
+        mp1 = Factory(:micropost, :user => @user, :content => "Foo bar")
+        mp2 = Factory(:micropost, :user => @user, :content => "Baz quuz")
+      end
+
+      it "should have the number of microposts" do
+        get :show, :id => @user
+        response.should have_selector("span.microposts", :content => @user.microposts.count.to_s)
+      end
+
+      it "should have the number of following" do
+        get :show, :id => @user
+        response.should have_selector("span#following", :content => @user.following.count.to_s)
+      end
+
+      it "should have the number of followers" do
+        get :show, :id => @user
+        response.should have_selector("span#followers", :content => @user.followers.count.to_s)
+      end
     end
   end
 
